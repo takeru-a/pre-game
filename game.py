@@ -2,7 +2,7 @@
 import pygame as pg
 #ミキサーのインポート
 from pygame import mixer
-import numpy as np
+
 
 #初期化
 pg.init()
@@ -18,11 +18,16 @@ pg.display.set_caption("game")
 #画像の読み込み
 img = pg.image.load("./imgs/penpen2.png")
 img_w = img.get_width()
+img_h = img.get_height()
 #座標の設定
 x = 0
 y = 390
+#移動する距離を格納する変数
 dis_x = 0
+dis_y = 0
+
 speed = 1
+speedup = 0
 
 #フォントの設定
 font = pg.font.SysFont(None,50)
@@ -61,6 +66,18 @@ while running:
             # ”->”が入力されると実行
             if event.key == pg.K_RIGHT:
                 dis_x += speed
+            # upキーが入力されると実行   
+            if event.key == pg.K_UP:
+                dis_y -= speed
+            # downキーが入力されると実行 
+            if event.key == pg.K_DOWN:
+                dis_y += speed
+            # Wキーが入力されると実行
+            if event.key == pg.K_w:
+                speedup +=0.001
+            # Sキーが入力されると実行
+            if event.key == pg.K_s:
+                speedup -=0.001
             # ESCキーを入力すると実行
             if event.key == pg.K_ESCAPE:
                 running = False
@@ -68,13 +85,25 @@ while running:
         if event.type == pg.KEYUP:
             if event.key == pg.K_RIGHT or event.key == pg.K_LEFT:
                 dis_x = 0
+            if event.key == pg.K_UP or event.key == pg.K_DOWN:
+                dis_y = 0
+            if event.key == pg.K_w or event.key == pg.K_s:
+                speedup = 0
             
     x += dis_x
+    y += dis_y
+    if speed <= 0.1:
+        speed=0.1
+    speed += speedup
     #動ける範囲の指定
-    if x>=screen_w-img_w:
+    if x >= screen_w-img_w:
         x = screen_w-img_w
-    if x<= 0:
+    if x <= 0:
         x = 0
+    if y <= 0:
+        y = 0
+    if y >= screen_h-img_h:
+        y = screen_h-img_h
     move(x, y)
     #ディスプレイの更新->ディスプレイに変更を加えた場合は実行する必要がある
     pg.display.update()
