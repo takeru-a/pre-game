@@ -2,8 +2,6 @@
 import pygame as pg
 #ミキサーのインポート
 from pygame import mixer
-
-
 #初期化
 pg.init()
 #スクリーンの設定
