@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import time
+from cgame import Cgame
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 
@@ -25,6 +26,8 @@ def detection_Fingertip(img, landmarks):
         landmark_point.append([landmark_x, landmark_y, landmark_z])
     
     cv2.circle(img, (landmark_point[8][0], landmark_point[8][1]), 7, (0, 0, 255), -1)
+    point = [landmark_point[8][0],landmark_point[8][1] ]
+    return point
 
 def main():
     global device
@@ -32,6 +35,7 @@ def main():
     fps = cap.get(cv2.CAP_PROP_FPS)
     wt  = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
     ht  = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    game = Cgame()
 
     print("Size:", ht, "x", wt, "/Fps: ", fps)
 
@@ -63,8 +67,10 @@ def main():
             
             if results.multi_hand_landmarks:
                 for hand_landmarks in results.multi_hand_landmarks:
-                    detection_Fingertip(frame, hand_landmarks)
+                    point = detection_Fingertip(frame, hand_landmarks)
+                    game.setPoint(point[0], point[1])
             cv2.imshow('MediaPipe Hands', frame)
+            game.exe()
             if cv2.waitKey(5) & 0xFF == 27:
                 break
     cap.release()
