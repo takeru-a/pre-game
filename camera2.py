@@ -1,3 +1,4 @@
+from numpy.random.mtrand import f
 import cv2
 import mediapipe as mp
 import time
@@ -17,8 +18,10 @@ def pinch(img, point):
     points = [(point[0][0]+point[1][0])//2,(point[0][1]+point[1][1])//2]
     if abs(point[0][0]-point[1][0])<=15 and abs(point[0][1]-point[1][1])<=25:
         cv2.circle(img, (points[0], points[1]), 7, (0, 255, 255), 3)
-        cv2.putText(img, "PINCH",(200,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+        cv2.putText(img, "UP",(200,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
         flag = True
+    else :
+        cv2.putText(img, "DOWN",(200,200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
     
     return flag
 
@@ -76,13 +79,14 @@ def main():
             results = hands.process(frame)
             frame.flags.writeable = True
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            
+            flag = False
             if results.multi_hand_landmarks:
                 for hand_landmarks in results.multi_hand_landmarks:
                     flag = detection_Fingertip(frame, hand_landmarks)
                     game.setPoint(flag)
             cv2.imshow('MYcamera', frame)
             game.exe()
+            game.setPoint(flag)
             if cv2.waitKey(1) & 0xFF == ord('r'):
                 game.resetPoint()
             if cv2.waitKey(1) & 0xFF == 27:
