@@ -1,9 +1,7 @@
 import pygame as pg
 import time
 from enemy import Enemy
-import math
-
-
+from item import Item
 
 
 class Flygame:
@@ -15,15 +13,13 @@ class Flygame:
     f_img = img
     img_w = img.get_width()
     img_h = img.get_height()
-    enemy = Enemy(screen_w,200)
-    e_list = []
-    e_list.append(enemy)
     hp = 2
     hpflag = 0
     start_time = 0
     time = 0
-    cnt = 1
     hp_img = pg.image.load("./imgs/hp.png")
+    item_timer = 0
+    start_time2 = 0
     
     def __init__(self, x=200, y=200):
         pg.init()
@@ -35,19 +31,52 @@ class Flygame:
         self.screen.fill((255,255,255))
         self.screen.blit(self.back, self.rect_bg)
         pg.display.set_caption("flygame")
-        font = pg.font.SysFont(None,50)
-        self.message = font.render("HP:",False, (255,0,0))
+        self.font1 = pg.font.SysFont(None,50)
+        font2 = pg.font.SysFont(None,200)
+        self.message = self.font1.render("HP:",False, (0,255,0))
+        self.score_mg = self.font1.render("SCORE:",False, (255,0,255))
+        self.gameover = font2.render("GAME OVER",False, (255,0,0))
         self.start_time = time.time()
+        self.start_time2 = time.time()
+        self.cnt = 1
+        self.enemy = Enemy(self.screen_w,200)
+        self.e_list = []
+        self.e_list.append(self.enemy)
+        self.item = Item(self.screen_w)
+        self.score = 0
 
     def setPoint(self, flag):
         if flag:
-            self.y -= 5
+            self.y -= 8
         else:
-            self.y += 3
+            self.y += 4
 
     def resetPoint(self):
         self.x = 200
         self.y = 200
+    
+    def item_get(self):
+        item = self.item.getImage()
+        min_point = [self.x, self.y]
+        max_point = [self.x+self.img_w-8, self.y+self.img_h]
+        e_up = self.item.getPoint()
+        e_mid = [e_up[0],e_up[1]+item.get_height()//2]
+        e_down = [e_up[0],e_up[1]+item.get_height()]
+        e_back = [e_up[0]+item.get_width(),e_up[1]+item.get_height()//2]
+
+        if min_point[0] <= e_mid[0] <= max_point[0]:
+            if min_point[1] <= e_mid[1] <= max_point[1]:
+                return True
+        if min_point[0] <= e_up[0] <= max_point[0]:
+            if min_point[1] <= e_up[1] <= max_point[1]:
+                return True
+        if min_point[0] <= e_down[0] <= max_point[0]:
+            if min_point[1] <= e_down[1] <= max_point[1]:
+                return True
+        if min_point[0] <= e_back[0] <= max_point[0]:
+            if min_point[1] <= e_back[1] <= max_point[1]:
+                return True
+        return False
 
     def conllision(self, e_points, e_img):
         min_point = [self.x, self.y]
@@ -73,21 +102,34 @@ class Flygame:
             index += 1
         return False , -1
     def exe(self):
+        self.score += 0.5  
+        score_num = self.font1.render(f" {int(self.score)} M",False, (255,150,105))
         INTERVAL = 15
         UPPER_LIMIT = 3
         SPEED = 15
         self.time = time.time()-self.start_time
-        
         if int(self.time) == INTERVAL and self.cnt < UPPER_LIMIT:
             enemy = Enemy(self.screen_w)
             self.e_list.append(enemy)
             self.start_time = time.time()
             self.cnt += 1
-            
+
         self.screen.fill((255,255,255))
         self.screen.blit(self.back, self.rect_bg)
-        
         self.screen.blit(self.message, (30, 20))
+        self.screen.blit(self.score_mg, (500, 20))
+        self.screen.blit(score_num, (640, 20))
+
+        self.item_timer = time.time()-self.start_time2
+        if int(self.item_timer) >= 5:
+            point = self.item.getPoint()
+            item_img = self.item.getImage()
+            self.screen.blit(item_img,(point[0],point[1]))
+            self.item.move(speed=SPEED)
+            if point[0] <= -1*item_img.get_width():
+                self.item.setPoint()
+                self.start_time2 = time.time()
+
         
         if self.x >= self.screen_w-self.img_w:
             self.x = self.screen_w-self.img_w
@@ -98,6 +140,7 @@ class Flygame:
         if self.y >= self.screen_h-self.img_h:
             self.y = self.screen_h-self.img_h
         self.screen.blit(self.img, (self.x, self.y))
+
         points = []
         for enemy in self.e_list:
             points.append(enemy.getPoint())
@@ -116,6 +159,10 @@ class Flygame:
                 points = enemy.getPoint()
                 self.screen.blit(enemy_img,(points[0],points[1]))
                 enemy.move(speed=SPEED)
+        if self.item_get():
+            self.item.setPoint()
+            self.hp = 2
+            self.hpflag = 0
         if self.hp == 1:
             self.screen.blit(self.hp_img,(90,23))
         if self.hp==2:
@@ -125,18 +172,8 @@ class Flygame:
             self.img_w = self.img.get_width()
             self.img_h = self.img.get_height()
         if self.hp <= 0:
-            self.hp+=2
-            self.hpflag = 0
+            self.screen.blit(self.gameover,(50,200))
+            pg.display.update()
+            return True
         pg.display.update()
-        
-
-
-
-
-
-
-
-
-
-
-    
+        return False
