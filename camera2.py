@@ -7,8 +7,10 @@ import numpy as np
 mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 play_game = 0
+end_game = 0
 device = 0
 play_img = cv2.imread("./imgs/play.jpg")
+exit_img = cv2.imread("./imgs/exit.jpg")
 
 def getFrameNumber(start:float, fps:int):
     now = time.perf_counter() - start
@@ -28,13 +30,13 @@ def pinch(img, point):
     return flag
 def combine(img):
     white = np.ones((img.shape), dtype=np.uint8) * 255  
-     
+    white[0:exit_img.shape[0],0:exit_img.shape[1]] = exit_img 
     white[100:100+play_img.shape[0],400:400+play_img.shape[1]] = play_img
     dwhite = white
     img[dwhite!=[255, 255, 255]] = dwhite[dwhite!=[255, 255, 255]]
     cv2.putText(img, "PLAY GAME!!",(380,80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
 def detection_Fingertip(img, landmarks):
-    global play_game
+    global play_game, end_game
     img_width, img_height = img.shape[1], img.shape[0]
     landmark_point = []
     
@@ -46,7 +48,9 @@ def detection_Fingertip(img, landmarks):
         landmark_z = landmark.z
 
         landmark_point.append([landmark_x, landmark_y, landmark_z])
-    
+    if 0 <= landmark_point[8][1] <= exit_img.shape[0] :
+        if 0 <= landmark_point[8][0] <= exit_img.shape[1]:
+            end_game = 1
     if 100 <= landmark_point[8][1] <= 100+play_img.shape[0] :
         if 400 <= landmark_point[8][0] <= 400+play_img.shape[1]:
             play_game = 1
@@ -107,7 +111,7 @@ def main():
                     play_game = 0
                     game = Flygame()
                 game.setPoint(flag)
-            if cv2.waitKey(5) & 0xFF == 27:
+            if cv2.waitKey(5) & 0xFF == 27 or end_game==1:
                 break
     cap.release()
 

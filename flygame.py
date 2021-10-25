@@ -7,29 +7,28 @@ from item import Item
 class Flygame:
     screen_w = 960
     screen_h = 480
-    back = pg.image.load("./imgs/suichu.jpg")
-    back = pg.transform.scale(back, (960, 480))
+    back = pg.image.load("./imgs/suichu2.jpg")
+    back = pg.transform.scale(back, (1920, 480))
     img = pg.image.load("./imgs/swimpen.png")
     f_img = img
     img_w = img.get_width()
     img_h = img.get_height()
+    score = 0
     hp = 2
     hpflag = 0
     start_time = 0
     time = 0
-    hp_img = pg.image.load("./imgs/hp.png")
     item_timer = 0
     start_time2 = 0
+    
+    hp_img = pg.image.load("./imgs/hp.png")
+   
     
     def __init__(self, x=200, y=200):
         pg.init()
         self.x = x
         self.y = y
         self.screen =pg.display.set_mode((self.screen_w,self.screen_h))
-        #self.bg = self.back.convert_alpha() 
-        self.rect_bg = self.back.get_rect()
-        self.screen.fill((255,255,255))
-        self.screen.blit(self.back, self.rect_bg)
         pg.display.set_caption("flygame")
         self.font1 = pg.font.SysFont(None,50)
         font2 = pg.font.SysFont(None,200)
@@ -37,19 +36,22 @@ class Flygame:
         self.score_mg = self.font1.render("SCORE:",False, (255,0,255))
         self.gameover = font2.render("GAME OVER",False, (255,0,0))
         self.start_time = time.time()
-        self.start_time2 = time.time()
+        self.start_time2 = self.start_time
+        self.init_timer = self.start_time
         self.cnt = 1
         self.enemy = Enemy(self.screen_w,200)
         self.e_list = []
         self.e_list.append(self.enemy)
         self.item = Item(self.screen_w)
-        self.score = 0
+        self.bg_x = 0
+        
+        
 
     def setPoint(self, flag):
         if flag:
-            self.y -= 8
+            self.y -= 12
         else:
-            self.y += 4
+            self.y += 5
 
     def resetPoint(self):
         self.x = 200
@@ -104,24 +106,30 @@ class Flygame:
     def exe(self):
         self.score += 0.5  
         score_num = self.font1.render(f" {int(self.score)} M",False, (255,150,105))
-        INTERVAL = 15
+        SCROLL = 12
+        INTERVAL = 10
+        INTERVAL2 = 5
         UPPER_LIMIT = 3
-        SPEED = 15
+        SPEED = 30
+        if self.start_time == self.init_timer:
+            self.start_time = time.time()
+            self.start_time2 = time.time()
         self.time = time.time()-self.start_time
         if int(self.time) == INTERVAL and self.cnt < UPPER_LIMIT:
             enemy = Enemy(self.screen_w)
             self.e_list.append(enemy)
             self.start_time = time.time()
             self.cnt += 1
-
+        self.bg_x = (self.bg_x-SCROLL)%self.screen_w
         self.screen.fill((255,255,255))
-        self.screen.blit(self.back, self.rect_bg)
+        self.screen.blit(self.back, (self.bg_x,0))
+        self.screen.blit(self.back, (self.bg_x-self.screen_w,0))
         self.screen.blit(self.message, (30, 20))
         self.screen.blit(self.score_mg, (500, 20))
         self.screen.blit(score_num, (640, 20))
 
         self.item_timer = time.time()-self.start_time2
-        if int(self.item_timer) >= 5:
+        if int(self.item_timer) >= INTERVAL2:
             point = self.item.getPoint()
             item_img = self.item.getImage()
             self.screen.blit(item_img,(point[0],point[1]))
@@ -129,6 +137,7 @@ class Flygame:
             if point[0] <= -1*item_img.get_width():
                 self.item.setPoint()
                 self.start_time2 = time.time()
+                
 
         
         if self.x >= self.screen_w-self.img_w:
@@ -161,6 +170,7 @@ class Flygame:
                 enemy.move(speed=SPEED)
         if self.item_get():
             self.item.setPoint()
+            self.start_time2 = time.time()
             self.hp = 2
             self.hpflag = 0
         if self.hp == 1:
