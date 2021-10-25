@@ -1,4 +1,5 @@
 import pygame as pg
+from pygame import mixer
 import time
 from enemy import Enemy
 from item import Item
@@ -25,6 +26,7 @@ class Flygame:
    
     
     def __init__(self, x=200, y=200):
+        NONSOUND = 1
         pg.init()
         self.x = x
         self.y = y
@@ -44,6 +46,18 @@ class Flygame:
         self.e_list.append(self.enemy)
         self.item = Item(self.screen_w)
         self.bg_x = 0
+        music = mixer.Sound("./sounds/suichu.mp3")
+        music.set_volume(0.05*NONSOUND)
+        music.play(-1)
+        music2 = mixer.Sound("./sounds/music.mp3")
+        music2.set_volume(0.01*NONSOUND)
+        music2.play(-1)
+        self.bakuha = mixer.Sound("./sounds/bakuha.mp3")
+        self.bakuha.set_volume(0.1*NONSOUND)
+        self.kaihuku = mixer.Sound("./sounds/kaihuku.mp3")
+        self.kaihuku.set_volume(0.1*NONSOUND)
+
+    
         
         
 
@@ -104,6 +118,7 @@ class Flygame:
             index += 1
         return False , -1
     def exe(self):
+        
         self.score += 0.5  
         score_num = self.font1.render(f" {int(self.score)} M",False, (255,150,105))
         SCROLL = 12
@@ -156,6 +171,7 @@ class Flygame:
         enemy_img = self.enemy.getImage()
         result = self.conllision(points,enemy_img)
         if result[0]:
+            self.bakuha.play()
             self.hp -= 1
             self.screen.blit(self.e_list[result[1]].hit(),(self.x+self.img_w//2,self.y))
         if self.hp==1 and self.hpflag==0:
@@ -169,6 +185,7 @@ class Flygame:
                 self.screen.blit(enemy_img,(points[0],points[1]))
                 enemy.move(speed=SPEED)
         if self.item_get():
+            self.kaihuku.play()
             self.item.setPoint()
             self.start_time2 = time.time()
             self.hp = 2
