@@ -36,6 +36,7 @@ class Flygame:
         font2 = pg.font.SysFont(None,200)
         self.message = self.font1.render("HP:",False, (0,255,0))
         self.score_mg = self.font1.render("SCORE:",False, (255,0,255))
+        self.new_record = self.font1.render("NEW RECORD!!",False, (25,100,125))
         self.gameover = font2.render("GAME OVER",False, (255,0,0))
         self.start_time = time.time()
         self.start_time2 = self.start_time
@@ -47,13 +48,13 @@ class Flygame:
         self.item = Item(self.screen_w)
         self.bg_x = 0
         music = mixer.Sound("./sounds/suichu.mp3")
-        music.set_volume(0.05*NONSOUND)
+        music.set_volume(0.1*NONSOUND)
         music.play(-1)
         music2 = mixer.Sound("./sounds/music.mp3")
-        music2.set_volume(0.01*NONSOUND)
+        music2.set_volume(0.05*NONSOUND)
         music2.play(-1)
         self.bakuha = mixer.Sound("./sounds/bakuha.mp3")
-        self.bakuha.set_volume(0.1*NONSOUND)
+        self.bakuha.set_volume(0.5*NONSOUND)
         self.kaihuku = mixer.Sound("./sounds/kaihuku.mp3")
         self.kaihuku.set_volume(0.1*NONSOUND)
 
@@ -200,6 +201,15 @@ class Flygame:
             self.img_h = self.img.get_height()
         if self.hp <= 0:
             self.screen.blit(self.gameover,(50,200))
+            
+            path = "./record.txt"
+            with open(path) as f:
+                score = f.read()
+            myscore = int(self.score)
+            if myscore > int(score):
+                self.screen.blit(self.new_record,(350,100))
+                with open(path, mode='w') as f:
+                    f.write(str(myscore))
             pg.display.update()
             return True
         pg.display.update()

@@ -4,7 +4,6 @@ import mediapipe as mp
 import time
 from flygame import Flygame
 import numpy as np
-mp_drawing = mp.solutions.drawing_utils
 mp_hands = mp.solutions.hands
 play_game = 0
 end_game = 0
@@ -99,6 +98,10 @@ def main():
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             flag = False
             combine(frame)
+            f = open('record.txt', 'r')
+            score = f.read()
+            f.close()
+            cv2.putText(frame,"Best Record: " + score + "m",(150,40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
             if results.multi_hand_landmarks:
                 for hand_landmarks in results.multi_hand_landmarks:
                     flag = detection_Fingertip(frame, hand_landmarks)
